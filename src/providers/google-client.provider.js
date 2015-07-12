@@ -3,8 +3,6 @@
   angular.module('cm-google-api').provider('googleClient', function () {
     var apisToLoad;
     var configuration;
-    //var CLIENT_ID = "63185388726-6iobqfaremoc92rh9drgketj0a0r0ep1.apps.googleusercontent.com";
-    //var SCOPES = "https://www.googleapis.com/auth/userinfo.email";
 
     var apiLoadingPromise;
     var apiLoaded = false;
