@@ -1,8 +1,9 @@
 (function() {
   'use strict';
   angular.module('cm-google-api').provider('googleClient', function () {
-    var apisToLoad;
-    var configuration;
+    var apisToLoad = 0;
+    var googleApis = [];
+    var cloudEndpoints = [];
 
     var apiLoadingPromise;
     var apiLoaded = false;
@@ -20,9 +21,20 @@
       }
     };
 
-    this.configure = function (config) {
-      apisToLoad = config.length;
-      configuration = config;
+    this.addApi = function(api, version, baseUrl){
+      console.log(api);
+      console.log(version);
+      console.log(baseUrl);
+      var obj = {};
+      obj.api = api;
+      obj.version = version;
+      apisToLoad++;
+      if(baseUrl === 'undefined'){
+        googleApis.push(obj);
+      }else{
+        obj.baseUrl = baseUrl;
+        cloudEndpoints.push(obj);
+      }
     };
 
     this.$get = ['$q', '$window', function ($q, $window) {
@@ -51,13 +63,12 @@
             this.afterClientLoaded().then(function(){
               apiLoading = true;
               console.log('loading api');
-              angular.forEach(configuration, function(conf){
-                if(conf.cloudEndpoint){
-                  gapi.client.load(conf.api, conf.version, function(){apiLoadCallback(apiLoadingPromise);}, conf.baseUrl);
-                }else{
-                  gapi.client.load(conf.api, conf.version, function(){apiLoadCallback(apiLoadingPromise);});
-                }
-             });
+              angular.forEach(cloudEndpoints, function(endpoint){
+                gapi.client.load(endpoint.api, endpoint.version, function(){apiLoadCallback(apiLoadingPromise);}, endpoint.baseUrl);
+              });
+              angular.forEach(googleApis, function(api){
+                gapi.client.load(api.api, api.version, function(){apiLoadCallback(apiLoadingPromise);});
+              });
             });
           }
           return apiLoadingPromise.promise;
