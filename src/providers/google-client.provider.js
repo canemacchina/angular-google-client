@@ -94,10 +94,8 @@
           }
           return apiLoadingPromise.promise;
         },
-        configs: {
-          'clientId':clientId,
-          'scopes': scopes
-        }
+        clientId: clientId,
+        scopes: scopes
       };
     }];
   });
