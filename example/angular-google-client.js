@@ -55,7 +55,7 @@
     };
 
     this.addScope = function(scope){
-      scopes += ' ' + scope
+      scopes += ' ' + scope;
       return this;
     };
 
@@ -64,7 +64,7 @@
       return this;
     };
 
-    this.$get = ['$q', '$window', function ($q, $window) {
+    this.$get = ['$q', '$window', '$document', function ($q, $window, $document) {
       return{
         afterClientLoaded: function(){
           if(!clientLoaded && !clientLoading){
@@ -75,23 +75,29 @@
               clientLoading = false;
               clientLoadingPromise.resolve();
             };
-            var s = document.createElement('script');
-            s.src = 'https://apis.google.com/js/client.js?onload=_cmGoogleClientInitCallback';
-            document.body.appendChild(s);
+            var script = $document[0].createElement('script');
+            script.onerror = function (e) {
+              clientLoadingPromise.reject(e);
+            };
+            script.src = 'https://apis.google.com/js/client.js?onload=_cmGoogleClientInitCallback';
+            $document[0].body.appendChild(script);
           }
           return clientLoadingPromise.promise;
         },
         afterApiLoaded: function(){
           if(!apiLoaded && !apiLoading){
             apiLoadingPromise = $q.defer();
+            apiLoading = true;
             this.afterClientLoaded().then(function(){
-              apiLoading = true;
               angular.forEach(cloudEndpoints, function(endpoint){
                 gapi.client.load(endpoint.api, endpoint.version, function(){apiLoadCallback(apiLoadingPromise);}, endpoint.baseUrl);
               });
               angular.forEach(googleApis, function(api){
                 gapi.client.load(api.api, api.version, function(){apiLoadCallback(apiLoadingPromise);});
               });
+            },
+            function(e){
+              apiLoadingPromise.reject(e);
             });
           }
           return apiLoadingPromise.promise;
@@ -101,4 +107,37 @@
       };
     }];
   });
+})();
+
+(function() {
+  'use strict';
+  angular.module('cm-google-api').service('googleClientService', ['$q', 'googleClient', function ($q, googleClient) {
+    this.execute = function(apiMethod, params){
+      var deferred = $q.defer();
+      googleClient.afterApiLoaded().then(function(){
+        apiMethod = apiMethod.split('.');
+        var method = gapi.client;
+        angular.forEach(apiMethod, function(m){
+          method = method[m];
+        }, method);
+        var request;
+        if(typeof params === 'undefined'){
+          request = method();
+        }else{
+          request = method(params);
+        }
+        request.then(
+          function(resp){
+            deferred.resolve(resp);
+          },
+          function(reason){
+            deferred.reject(reason);
+          });
+      },
+      function(e){
+        deferred.reject(e);
+      });
+      return deferred.promise;
+    };
+  }]);
 })();

@@ -11,11 +11,21 @@
     .setAutomaticAuth();
   });
 
-  app.controller('AppCtrl', function ($scope, googleClient, $q) {
+  app.controller('AppCtrl', function ($scope, googleClient, $q, googleClientService) {
     $scope.email = '';
+
+    googleClientService.execute('oauth2.userinfo.get').then(function(resp){
+      console.log('dal service');
+      console.log(resp);
+    },
+    function(reason){
+      console.log('service errore');
+      console.log(reason);
+    });
 
     googleClient.afterApiLoaded().then(function(){
       gapi.client.oauth2.userinfo.get().execute(function(resp) {
+        console.log('da solo');
         console.log(resp);
       });
     });
@@ -39,15 +49,23 @@
     };
 
     $scope.signIn = function(){
-      console.log('autorizzo');
       gapi.auth.authorize({'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': false}, function(){});
     };
 
     $scope.vai = function(){
       googleClient.afterApiLoaded().then(function(){
         gapi.client.testApi.auth().execute(function(resp){
+          console.log('da solo');
           console.log(resp);
         });
+      });
+      googleClientService.execute('testApi.auth').then(function(resp){
+        console.log('dal service');
+        console.log(resp);
+      },
+      function(reason){
+        console.log('service errore');
+        console.log(reason);
       });
     };
   });
