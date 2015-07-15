@@ -1,9 +1,14 @@
 (function() {
   'use strict';
   angular.module('cm-google-api').provider('googleClient', function () {
+    var clientId;
+    //FIXME: Set() is not compatible to all browser, so I'll have to wait...
+    var scopes = {};
+
     var apisToLoad = 0;
     var googleApis = [];
     var cloudEndpoints = [];
+    var tryAutomaticAuth = false;
 
     var apiLoadingPromise;
     var apiLoaded = false;
@@ -17,24 +22,46 @@
       if (--apisToLoad === 0) {
         apiLoaded = true;
         apiLoading = false;
-        deferred.resolve();
+        if(tryAutomaticAuth){
+          var scopesStrings = '';
+          angular.forEach(scopes, function(value, key) {
+            scopesStrings += ' ' + key;
+          });
+          gapi.auth.authorize({'client_id': clientId, 'scope': scopesStrings, 'immediate': true}, function(){deferred.resolve();});
+        }else{
+          deferred.resolve();
+        }
       }
     };
 
     this.addApi = function(api, version, baseUrl){
-      console.log(api);
-      console.log(version);
-      console.log(baseUrl);
       var obj = {};
       obj.api = api;
       obj.version = version;
       apisToLoad++;
-      if(baseUrl === 'undefined'){
+      if(typeof baseUrl === 'undefined'){
         googleApis.push(obj);
       }else{
         obj.baseUrl = baseUrl;
         cloudEndpoints.push(obj);
       }
+      return this;
+    };
+
+    this.setAutomaticAuth = function(){
+      tryAutomaticAuth = true;
+      this.addScope('https://www.googleapis.com/auth/userinfo.email');
+      return this;
+    };
+
+    this.addScope = function(scope){
+      scopes[scope] = true;
+      return this;
+    };
+
+    this.setClientId = function(client){
+      clientId = client;
+      return this;
     };
 
     this.$get = ['$q', '$window', function ($q, $window) {
@@ -43,7 +70,6 @@
           if(!clientLoaded && !clientLoading){
             clientLoading = true;
             clientLoadingPromise = $q.defer();
-            console.log('loading client');
             var randomId = new Date().getTime();
             var callbackName = '_gapiServiceInitCallback'+randomId;
             $window[callbackName] = function(){
@@ -62,7 +88,6 @@
             apiLoadingPromise = $q.defer();
             this.afterClientLoaded().then(function(){
               apiLoading = true;
-              console.log('loading api');
               angular.forEach(cloudEndpoints, function(endpoint){
                 gapi.client.load(endpoint.api, endpoint.version, function(){apiLoadCallback(apiLoadingPromise);}, endpoint.baseUrl);
               });
