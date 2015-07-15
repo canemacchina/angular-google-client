@@ -11,13 +11,11 @@ gulp.task('uglify', function () {
   return gulp.src(['src/googleApi.module.js', 'src/providers/*.js', 'src/services/*.js'])
     .pipe(sourcemaps.init())
     .pipe(concat('angular-google-client.js'))
-    .pipe(gulp.dest('example'))
     .pipe(rename('angular-google-client.min.js'))
     .pipe(stripDebug())
     .pipe(uglify())
     .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest('dist'))
-    .pipe(gulp.dest('example'));
+    .pipe(gulp.dest('dist'));
 });
 
 gulp.task('watch', function () {
