@@ -10,7 +10,8 @@
     "Google",
     "Google Cloud Endpoints",
     "Google Client Library for JavaScript",
-    "Google App Engine"
+    "Google App Engine",
+    "Angularjs Google client library integration"
   ],
   "license": "MIT",
   "ignore": [
