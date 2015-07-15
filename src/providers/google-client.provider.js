@@ -2,7 +2,6 @@
   'use strict';
   angular.module('cm-google-api').provider('googleClient', function () {
     var clientId;
-    //FIXME: Set() is not compatible to all browser, so I'll have to wait...
     var scopes = [];
 
     var apisToLoad = 0;

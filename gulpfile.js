@@ -20,4 +20,8 @@ gulp.task('uglify', function () {
     .pipe(gulp.dest('example'));
 });
 
-gulp.task('default', ['uglify']);
+gulp.task('watch', function () {
+  gulp.watch('src/**/*.js', ['uglify']);
+});
+
+gulp.task('default', ['watch']);
