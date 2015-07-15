@@ -5,12 +5,17 @@
     "Lorenzo Bugiani <lorenzo.bugiani@gmail.com>"
   ],
   "description": "Angularjs module to integrate Google API Client Library for JavaScript",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/canemacchina/angular-google-client.git"
+  },
   "keywords": [
     "Angularjs",
     "Google",
     "Google Cloud Endpoints",
     "Google Client Library for JavaScript",
-    "Google App Engine"
+    "Google App Engine",
+    "Angularjs Google client library integration"
   ],
   "license": "MIT",
   "ignore": [
