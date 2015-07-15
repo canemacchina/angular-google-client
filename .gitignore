@@ -3,6 +3,3 @@
 .settings
 node_modules
 bower_components
-dist
-test
-tests
