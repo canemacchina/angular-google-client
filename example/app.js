@@ -40,8 +40,6 @@
 
     $scope.signIn = function(){
       console.log('autorizzo');
-      console.log(googleClient.clientId);
-      console.log(googleClient.scopes);
       gapi.auth.authorize({'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': false}, function(){});
     };
 
