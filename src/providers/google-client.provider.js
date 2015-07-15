@@ -3,7 +3,7 @@
   angular.module('cm-google-api').provider('googleClient', function () {
     var clientId;
     //FIXME: Set() is not compatible to all browser, so I'll have to wait...
-    var scopes = {};
+    var scopes = [];
 
     var apisToLoad = 0;
     var googleApis = [];
@@ -23,11 +23,7 @@
         apiLoaded = true;
         apiLoading = false;
         if(tryAutomaticAuth){
-          var scopesStrings = '';
-          angular.forEach(scopes, function(value, key) {
-            scopesStrings += ' ' + key;
-          });
-          gapi.auth.authorize({'client_id': clientId, 'scope': scopesStrings, 'immediate': true}, function(){deferred.resolve();});
+          gapi.auth.authorize({'client_id': clientId, 'scope': scopes, 'immediate': true}, function(){deferred.resolve();});
         }else{
           deferred.resolve();
         }
@@ -55,7 +51,7 @@
     };
 
     this.addScope = function(scope){
-      scopes[scope] = true;
+      scopes += ' ' + scope
       return this;
     };
 
@@ -97,6 +93,10 @@
             });
           }
           return apiLoadingPromise.promise;
+        },
+        configs: {
+          'clientId':clientId,
+          'scopes': scopes
         }
       };
     }];
