@@ -66,15 +66,13 @@
           if(!clientLoaded && !clientLoading){
             clientLoading = true;
             clientLoadingPromise = $q.defer();
-            var randomId = new Date().getTime();
-            var callbackName = '_gapiServiceInitCallback'+randomId;
-            $window[callbackName] = function(){
+            $window._cmGoogleClientInitCallback = function(){
               clientLoaded = true;
               clientLoading = false;
               clientLoadingPromise.resolve();
             };
             var s = document.createElement('script');
-            s.src = 'https://apis.google.com/js/client.js?onload='+callbackName;
+            s.src = 'https://apis.google.com/js/client.js?onload=_cmGoogleClientInitCallback';
             document.body.appendChild(s);
           }
           return clientLoadingPromise.promise;
