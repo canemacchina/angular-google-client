@@ -57,10 +57,9 @@ You are done! Enjoy using gapi on Angular JS!
 ```javascript
 app.config(function (googleClientProvider) {
     googleClientProvider
-    .loadClientLibrary()
-    .loadPickerLibrary()
     .addApi('myApi', 'v1', 'https://app-id.appspot.com/_ah/api')
     .addApi('oauth2', 'v2')
+    .loadPickerLibrary()
     .setClientId('myClientId.apps.googleusercontent.com')
     .addScope('a scope')
     .addScope('another scope')
@@ -72,12 +71,11 @@ app.config(function (googleClientProvider) {
 
 method | params | description
 -----|---------|------------
-loadClientLibrary | | Tells `angular-google-client` to load the Google Client Library for Javascript. You need this if you want to use some Google Api or call a Cloud Endpoint.
-loadPickerLibrary | | Tells `angular-google-client` to load the Google Picker script. You need this if you want to use the Google Picker.
-addApi | api<br/>version<br/>baseUrl | Add an Api to the list of Api to be loaded. `baseUrl` parameter is optional, and needed only if you want to load a Cloud Endpoint Api.
-setClientId | clientId | Add the Client Id, needed to make api call.
-addScope | scope | Add a scope to the list of scope you need.
-setAutomaticAuth | | `googleClient` will try to authenticate user silently.<br/>**NB:**  this will work only if the user is already logged in to Google services and if he has already grant permission to your app
+loadPickerLibrary | | Optional. Tells `angular-google-client` to load the Google Picker script. You need this if you want to use the Google Picker.
+addApi | api<br/>version<br/>baseUrl | Optional. Add an Api to the list of Api to be loaded. `baseUrl` parameter is optional, and needed only if you want to load a Cloud Endpoint Api. When you call `addApi`, the provider automatically load Google Client library.
+setClientId | clientId | Add the Client Id, needed to make authorized api call, or to use Google Picker
+addScope | scope | Add a scope to the list of scope you need. Required if you need to access to some user personal data (es: user's Google Drive File), or if you need to log-in the user (in this case, you must to add at least `https://www.googleapis.com/auth/userinfo.email` scope).
+setAutomaticAuth | | Optional. `googleClient` will try to authenticate user silently.<br/>**NB:**  this will work only if the user is already logged in to Google services and if he has already grant permission to your app
 
 ## Usage
 You can use gapi client library in two ways: using `googleClientService`, a simple wrapper to gapi library, or using gapi directly.
