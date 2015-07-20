@@ -8,9 +8,10 @@ var stripDebug = require('gulp-strip-debug');
 var rename = require('gulp-rename');
 
 gulp.task('uglify', function () {
-  return gulp.src(['src/googleApi.module.js', 'src/providers/*.js', 'src/services/*.js'])
+  return gulp.src(['src/googleApi.module.js', 'src/providers/*.js', 'src/services/*.js', 'src/directives/*.js'])
     .pipe(sourcemaps.init())
     .pipe(concat('angular-google-client.js'))
+    .pipe(gulp.dest('dist'))
     .pipe(rename('angular-google-client.min.js'))
     .pipe(stripDebug())
     .pipe(uglify())
