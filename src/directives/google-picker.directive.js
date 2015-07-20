@@ -32,7 +32,7 @@
       }
 
       function pickerCallback (data) {
-        if (data.action === google.picker.Action.PICKED) {
+        if (scope.onPicked && data.action === google.picker.Action.PICKED) {
           scope.onPicked(data.docs);
         }
       }
@@ -58,10 +58,12 @@
       }
 
       loading = true;
-      googleClient.afterScriptsLoaded().then(function(){
-        authDeferred = $q.defer();
-        gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': scope.scopes, 'immediate': true },  handleAuthResult);
-      });
+      googleClient.afterScriptsLoaded().then(
+        function(){
+          authDeferred = $q.defer();
+          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': scope.scopes, 'immediate': true },  handleAuthResult);
+        }
+      );
 
       element.bind('click', function (e) {
         openPicker();
