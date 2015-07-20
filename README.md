@@ -7,19 +7,18 @@ Also, it include a directive to use [Google Picker](https://developers.google.co
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+**Table of Contents**
 
-- [angular-google-client](#angular-google-client)
-  - [Table of Contents](#table-of-contents)
-  - [Requirements](#requirements)
-  - [Getting Started](#getting-started)
-    - [Get the library](#get-the-library)
-    - [Include `angular-google-client` script](#include-angular-google-client-script)
-    - [Add dependency](#add-dependency)
-  - [Configuration](#configuration)
-  - [Usage](#usage)
-    - [Make an Api call through googleClientService](#make-an-api-call-through-googleclientservice)
-    - [Use gapi library directly](#use-gapi-library-directly)
+- [Requirements](#requirements)
+- [Getting Started](#getting-started)
+  - [Get the library](#get-the-library)
+  - [Include `angular-google-client` script](#include-angular-google-client-script)
+  - [Add dependency](#add-dependency)
+- [Configuration](#configuration)
+- [Usage](#usage)
+  - [Make an Api call through googleClientService](#make-an-api-call-through-googleclientservice)
+  - [Use gapi library directly](#use-gapi-library-directly)
+  - [Use Google Picker](#use-google-picker)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
