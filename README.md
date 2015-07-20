@@ -8,7 +8,6 @@ Also, it include a directive to use [Google Picker](https://developers.google.co
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
-
 - [Requirements](#requirements)
 - [Getting Started](#getting-started)
   - [Get the library](#get-the-library)
@@ -70,6 +69,7 @@ app.config(function (googleClientProvider) {
 ```
 
 **Methods explanations:**
+
 method | params | description
 -----|---------|------------
 loadClientLibrary | | Tells `angular-google-client` to load the Google Client Library for Javascript. You need this if you want to use some Google Api or call a Cloud Endpoint.
@@ -168,6 +168,7 @@ app.controller('AppCtrl', function ($scope, googleClient) {
 ```
 
 **Attributes explanations:**
+
 attr | description
 -----|------------
 locale | UI language of the picker. Refer to [official documentation](https://developers.google.com/picker/docs/#i18n) for a list of locale.
