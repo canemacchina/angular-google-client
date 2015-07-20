@@ -101,7 +101,7 @@ app.controller('AppCtrl', function ($scope, googleClientService) {
   };
   //a method that require params:
   $scope.doSomethingWithParams = function(objParams){
-    googleClientService.execute('oauth2.userinfo.get', objParams).then(
+    googleClientService.execute('drive.files.list', objParams).then(
       function(resp){
         console.log(resp);
       },
@@ -125,7 +125,7 @@ If you feel more comfortable using gapi directly, use it! Only pay attention tha
 ```javascript
 app.controller('AppCtrl', function ($scope, googleClient) {
   googleClient.afterApiLoaded().then(function(){
-    gapi.client.testApi.auth().execute(function(resp){
+    gapi.client.drive.files.list({'maxResults': 10}).execute(function(resp){
       console.log(resp);
     });
   });
