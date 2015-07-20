@@ -45,7 +45,59 @@
       }
     };
 
+    var loadScripts = function(){
+      var aScriptLoaded = false;
+      if(loadClient){
+        aScriptLoaded = true;
+        gapi.load('client', {'callback': scriptsLoadCallback});
+      }
+      if(loadPicker){
+        if(typeof clientId === 'undefined'){
+          scriptsLoadingPromise.reject('you need to provide the clientId if you load Picker script');
+        }else{
+          aScriptLoaded = true;
+          gapi.load('picker', {'callback': scriptsLoadCallback});
+          gapi.load('auth', {'callback': scriptsLoadCallback});
+        }
+      }
+      return aScriptLoaded;
+    };
+
+    var loadApi = function(){
+      var anApiLoaded = false;
+      angular.forEach(cloudEndpoints, function(endpoint){
+        anApiLoaded = true;
+        gapi.client.load(endpoint.api, endpoint.version, apiLoadCallback, endpoint.baseUrl);
+      });
+      angular.forEach(googleApis, function(api){
+        anApiLoaded = true;
+        gapi.client.load(api.api, api.version, apiLoadCallback);
+      });
+      return !loadClient || anApiLoaded;
+    };
+
+    var loadClientLibrary = function(){
+      if(!loadClient){
+        loadClient = true;
+        scriptsToLoad++;
+      }
+      return this;
+    };
+
+    this.loadPickerLibrary = function(){
+      if(!loadPicker){
+        loadPicker = true;
+        //just a bit weird. If I load picker library, I need to call
+        //gapi.load('auth', {'callback': scriptsLoadCallback});
+        //but if I load client library, auth is automatically loaded.
+        //Instead of handle both cases, I prefer to load two time auth
+        scriptsToLoad +=2;
+      }
+      return this;
+    };
+
     this.addApi = function(api, version, baseUrl){
+      loadClientLibrary();
       var obj = {};
       obj.api = api;
       obj.version = version;
@@ -62,17 +114,6 @@
     this.setAutomaticAuth = function(){
       tryAutomaticAuth = true;
       this.addScope('https://www.googleapis.com/auth/userinfo.email');
-      return this;
-    };
-
-    this.loadClientLibrary = function(){
-      loadClient = true;
-      scriptsToLoad++;
-      return this;
-    };
-    this.loadPickerLibrary = function(){
-      loadPicker = true;
-      scriptsToLoad++;
       return this;
     };
 
@@ -93,11 +134,8 @@
             scriptsLoading = true;
             scriptsLoadingPromise = $q.defer();
             $window._cmGoogleClientInitCallback = function(){
-              if(loadClient){
-                gapi.load('client', {'callback': scriptsLoadCallback});
-              }
-              if(loadPicker){
-                gapi.load('picker', {'callback': scriptsLoadCallback});
+              if(!loadScripts()){
+                scriptsLoadingPromise.reject('at least you need to add some api or load picker.js');
               }
             };
             var script = $document[0].createElement('script');
@@ -114,12 +152,9 @@
             apiLoadingPromise = $q.defer();
             apiLoading = true;
             this.afterScriptsLoaded().then(function(){
-              angular.forEach(cloudEndpoints, function(endpoint){
-                gapi.client.load(endpoint.api, endpoint.version, apiLoadCallback, endpoint.baseUrl);
-              });
-              angular.forEach(googleApis, function(api){
-                gapi.client.load(api.api, api.version, apiLoadCallback);
-              });
+              if(!loadApi()){
+                apiLoadingPromise.reject('at least you nedd to load an Api');
+              }
             },
             function(e){
               apiLoadingPromise.reject(e);
