@@ -172,7 +172,7 @@ attr | description
 -----|------------
 locale | UI language of the picker. Refer to [official documentation](https://developers.google.com/picker/docs/#i18n) for a list of locale.
 scopes | List of scopes that your picker need.
-views | A function that `cm-google-picker` will call to get desired view. See the [official documentation](https://developers.google.com/picker/docs/reference) for a list o possible view. Must return an array of `google.picker.View`.
+views | A function that `cm-google-picker` will call to get desired view. See the [official documentation](https://developers.google.com/picker/docs/reference) for a list of possible view. Must return an array of `google.picker.View`.
 on-picked | Callback function that is called when the user select something on the picker and confirm the selection. Returns the [Response.DOCUMENTS](https://developers.google.com/picker/docs/reference#Response.DOCUMENTS) object from Google Picker.
 
 ## License
