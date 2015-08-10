@@ -3,6 +3,7 @@
   angular.module('cm-google-api').provider('googleClient', function () {
     var clientId;
     var scopes = [];
+    var googleAuthConfig = {};
 
     var apisToLoad = 0;
     var scriptsToLoad = 0;
@@ -11,6 +12,7 @@
     var tryAutomaticAuth = false;
     var loadClient = false;
     var loadPicker = false;
+    var loadGoogleSignIn = false;
 
     var apiLoadingPromise;
     var apiLoaded = false;
@@ -42,6 +44,19 @@
 
     var loadScripts = function(){
       var aScriptLoaded = false;
+      if(loadGoogleSignIn){
+        if(typeof clientId === 'undefined'){
+          scriptsLoadingPromise.reject('you need to provide the clientId if you load google auth');
+        }else{
+          aScriptLoaded = true;
+          gapi.load('auth2', function(){
+            googleAuthConfig.scope = scopes;
+            googleAuthConfig.client_id = clientId;
+            gapi.auth2.init(googleAuthConfig);
+            scriptsLoadCallback();
+          });
+        }
+      }
       if(loadClient){
         aScriptLoaded = true;
         gapi.load('client', {'callback': scriptsLoadCallback});
@@ -75,6 +90,22 @@
       if(!loadClient){
         loadClient = true;
         scriptsToLoad++;
+      }
+      return this;
+    };
+
+    this.loadGoogleAuth = function(config){
+      if(!loadGoogleSignIn){
+        loadGoogleSignIn = true;
+        scriptsToLoad++;
+        if(typeof config.cookie_policy !== 'undefined'){
+          googleAuthConfig.cookie_policy = config.cookie_policy;
+        }
+        if(typeof config.hosted_domain !== 'undefined'){
+          googleAuthConfig.hosted_domain = config.hosted_domain;
+        }
+        this.addScope('profile');
+        this.addScope('email');
       }
       return this;
     };
@@ -130,7 +161,7 @@
             scriptsLoadingPromise = $q.defer();
             $window._cmGoogleClientInitCallback = function(){
               if(!loadScripts()){
-                scriptsLoadingPromise.reject('at least you need to add some api or load picker.js');
+                scriptsLoadingPromise.reject('at least you need to add some api, load picker library or load google auth');
               }
             };
             var script = $document[0].createElement('script');
