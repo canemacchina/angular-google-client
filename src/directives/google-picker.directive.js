@@ -33,7 +33,7 @@
 
       function pickerCallback (data) {
         if (scope.onPicked && data.action === google.picker.Action.PICKED) {
-          scope.onPicked(data.docs);
+          scope.$apply(scope.onPicked(data.docs));
         }
       }
 
