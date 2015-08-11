@@ -12,7 +12,6 @@ gulp.task('uglify', function () {
     .pipe(sourcemaps.init())
     .pipe(concat('angular-google-client.js'))
     .pipe(gulp.dest('dist'))
-    .pipe(gulp.dest('example'))
     .pipe(rename('angular-google-client.min.js'))
     .pipe(stripDebug())
     .pipe(uglify())
