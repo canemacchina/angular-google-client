@@ -211,9 +211,9 @@
           /*
             From here the code start to be really weird.
             Since auth2 object have a THEN method Angular try to call auth2.then to resolve the deferred.
-            But that THEN method is not the angular deferred THEN method (is the gapi.auth2.GoogleAuth then method),
+            But that THEN method is not the angular deferred THEN method (is the gapi.auth2.GoogleAuth.then method),
             so nothing works.
-            To fix this, since I wanto to return the auth2 objest as is, I have to:
+            To fix this, since I want to return the auth2 objest as is, I have to:
 
             1) get a reference to the THEN method of Google Object
             2) delete the method on the Google object (setting it at UNDEFINED)
