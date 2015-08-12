@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  angular.module('cm-google-api').directive('cmGoogleSignIn', ['googleClient', function(googleClient){
+  angular.module('cm-google-api').directive('cmGoogleSignIn', ['$http', 'googleClient', function($http, googleClient){
     return {
       restrict: 'E',
       transclude: true,
@@ -10,26 +10,36 @@
         signInListener: '=',
         userListener: '='
       },
-      template: '<ng-transclude></ng-transclude>',
+      template: '<span ng-transclude></span>',
       link: function (scope, element, attrs) {
+
+        function clickHandler(googleUser){
+          scope.$apply(scope.clickHandler(googleUser));
+        }
+
+        function userListener(googleUser){
+          scope.$apply(scope.userListener(googleUser));
+        }
+
+        function signInListener(val){
+          scope.$apply(scope.signInListener(val));
+        }
+
+        if(typeof scope.clickHandler === 'undefined'){
+          scope.clickHandler = angular.noop;
+        }
         googleClient.afterScriptsLoaded().then(
           function(){
             var auth2 = gapi.auth2.getAuthInstance();
-            if (scope.signInListener) {
-              auth2.isSignedIn.listen(scope.signInListener);
+            if (typeof scope.signInListener !== 'undefined') {
+              auth2.isSignedIn.listen(signInListener);
             }
-            if (scope.userListener) {
-              auth2.currentUser.listen(scope.userListener);
+            if (typeof scope.userListener !== 'undefined') {
+              auth2.currentUser.listen(userListener);
             }
-            auth2.attachClickHandler(element[0], {},
-              function(googleUser) {
-                if (scope.clickHandler) {
-                  scope.clickHandler(googleUser);
-                }
-              }, function(error) {
-                console.log(JSON.stringify(error, undefined, 2));
-              }
-            );
+            auth2.attachClickHandler(element[0], {}, clickHandler, function(error) {
+              console.log(JSON.stringify(error, undefined, 2));
+            });
           },
           function(e){
             console.log(e);

@@ -68,7 +68,7 @@
       }
       if(loadPicker){
         if(typeof clientId === 'undefined'){
-          scriptsLoadingPromise.reject('you need to provide the clientId if you load Picker script');
+          scriptsLoadingPromise.reject('you need to provide the clientId if you load google picker');
         }else{
           aScriptLoaded = true;
           gapi.load('picker', {'callback': scriptsLoadCallback});
@@ -184,7 +184,7 @@
             apiLoading = true;
             this.afterScriptsLoaded().then(function(){
               if(!loadApi()){
-                apiLoadingPromise.reject('at least you nedd to load an Api');
+                apiLoadingPromise.reject('at least you need to load an Api');
               }
             },
             function(e){
@@ -203,20 +203,35 @@
 (function() {
   'use strict';
   angular.module('cm-google-api').service('googleAuthService', ['$q', 'googleClient', function ($q, googleClient) {
-    /*
-      GoogleAuth.isSignedIn.get()
-      GoogleAuth.currentUser.get()
-      GoogleAuth.signIn()
-      GoogleAuth.signIn(options)
-      GoogleAuth.signOut()
-      GoogleAuth.disconnect()
-      GoogleAuth.grantOfflineAccess(options)
-    */
+    this.getAuthInstance = function(){
+      var deferred = $q.defer();
+      googleClient.afterScriptsLoaded().then(
+        function(){
+          var auth2 = gapi.auth2.getAuthInstance();
+          /*
+            From here the code start to be really weird.
+            Since auth2 object have a THEN method Angular try to call auth2.then to resolve the deferred.
+            But that THEN method is not the angular deferred THEN method (is the gapi.auth2.GoogleAuth then method),
+            so nothing works.
+            To fix this, since I wanto to return the auth2 objest as is, I have to:
 
+            1) get a reference to the THEN method of Google Object
+            2) delete the method on the Google object (setting it at UNDEFINED)
+            3) put back that method on the object
 
-
-
-
+            This bug occur with Angular version >=1.3.0
+          */
+          var thenFn = auth2.then;
+          auth2.then = undefined;
+          deferred.resolve(auth2);
+          auth2.then = thenFn;
+        },
+        function(e){
+          deferred.reject(e);
+        }
+      );
+      return deferred.promise;
+    };
   }]);
 })();
 
@@ -288,7 +303,7 @@
 
       function pickerCallback (data) {
         if (scope.onPicked && data.action === google.picker.Action.PICKED) {
-          scope.onPicked(data.docs);
+          scope.$apply(scope.onPicked(data.docs));
         }
       }
 
@@ -330,7 +345,7 @@
 
 (function() {
   'use strict';
-  angular.module('cm-google-api').directive('cmGoogleSignIn', ['googleClient', function(googleClient){
+  angular.module('cm-google-api').directive('cmGoogleSignIn', ['$http', 'googleClient', function($http, googleClient){
     return {
       restrict: 'E',
       transclude: true,
@@ -340,26 +355,36 @@
         signInListener: '=',
         userListener: '='
       },
-      template: '<ng-transclude></ng-transclude>',
+      template: '<span ng-transclude></span>',
       link: function (scope, element, attrs) {
+
+        function clickHandler(googleUser){
+          scope.$apply(scope.clickHandler(googleUser));
+        }
+
+        function userListener(googleUser){
+          scope.$apply(scope.userListener(googleUser));
+        }
+
+        function signInListener(val){
+          scope.$apply(scope.signInListener(val));
+        }
+
+        if(typeof scope.clickHandler === 'undefined'){
+          scope.clickHandler = angular.noop;
+        }
         googleClient.afterScriptsLoaded().then(
           function(){
             var auth2 = gapi.auth2.getAuthInstance();
-            if (scope.signInListener) {
-              auth2.isSignedIn.listen(scope.signInListener);
+            if (typeof scope.signInListener !== 'undefined') {
+              auth2.isSignedIn.listen(signInListener);
             }
-            if (scope.userListener) {
-              auth2.currentUser.listen(scope.userListener);
+            if (typeof scope.userListener !== 'undefined') {
+              auth2.currentUser.listen(userListener);
             }
-            auth2.attachClickHandler(element[0], {},
-              function(googleUser) {
-                if (scope.clickHandler) {
-                  scope.clickHandler(googleUser);
-                }
-              }, function(error) {
-                console.log(JSON.stringify(error, undefined, 2));
-              }
-            );
+            auth2.attachClickHandler(element[0], {}, clickHandler, function(error) {
+              console.log(JSON.stringify(error, undefined, 2));
+            });
           },
           function(e){
             console.log(e);

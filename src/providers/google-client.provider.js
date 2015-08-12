@@ -63,7 +63,7 @@
       }
       if(loadPicker){
         if(typeof clientId === 'undefined'){
-          scriptsLoadingPromise.reject('you need to provide the clientId if you load Picker script');
+          scriptsLoadingPromise.reject('you need to provide the clientId if you load google picker');
         }else{
           aScriptLoaded = true;
           gapi.load('picker', {'callback': scriptsLoadCallback});
@@ -179,7 +179,7 @@
             apiLoading = true;
             this.afterScriptsLoaded().then(function(){
               if(!loadApi()){
-                apiLoadingPromise.reject('at least you nedd to load an Api');
+                apiLoadingPromise.reject('at least you need to load an Api');
               }
             },
             function(e){
