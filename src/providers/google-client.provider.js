@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  angular.module('cm-google-api').provider('googleClient', function () {
+  angular.module('cmGoogleApi').provider('googleClient', function () {
     var clientId;
     var scopes = [];
     var googleAuthConfig = {};
@@ -9,7 +9,6 @@
     var scriptsToLoad = 0;
     var googleApis = [];
     var cloudEndpoints = [];
-    var tryAutomaticAuth = false;
     var loadClient = false;
     var loadPicker = false;
     var loadGoogleSignIn = false;
@@ -26,11 +25,7 @@
       if (--apisToLoad === 0) {
         apiLoaded = true;
         apiLoading = false;
-        if(tryAutomaticAuth){
-          gapi.auth.authorize({'client_id': clientId, 'scope': scopes, 'immediate': true}, function(){apiLoadingPromise.resolve();});
-        }else{
-          apiLoadingPromise.resolve();
-        }
+        apiLoadingPromise.resolve();
       }
     };
 
@@ -104,8 +99,9 @@
         if(typeof config.hosted_domain !== 'undefined'){
           googleAuthConfig.hosted_domain = config.hosted_domain;
         }
+        googleAuthConfig.fetch_basic_profile = false;
         this.addScope('profile');
-        this.addScope('email');
+        //this.addScope('email');
       }
       return this;
     };
@@ -134,12 +130,6 @@
         obj.baseUrl = baseUrl;
         cloudEndpoints.push(obj);
       }
-      return this;
-    };
-
-    this.setAutomaticAuth = function(){
-      tryAutomaticAuth = true;
-      this.addScope('https://www.googleapis.com/auth/userinfo.email');
       return this;
     };
 

@@ -46,7 +46,7 @@ You don't need to load any Google client library script explicitly. `angular-goo
 ###Add dependency
 
 ```javascript
-var app = angular.module('myModule', ['cm-google-api']);
+var app = angular.module('myModule', ['cmGoogleApi']);
 ```
 
 You are done! Enjoy using gapi on Angular JS!

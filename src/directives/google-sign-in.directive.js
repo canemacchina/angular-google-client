@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  angular.module('cm-google-api').directive('cmGoogleSignIn', ['$http', 'googleClient', function($http, googleClient){
+  angular.module('cmGoogleApi').directive('cmGoogleSignIn', ['$http', 'googleClient', function($http, googleClient){
     return {
       restrict: 'E',
       transclude: true,
@@ -12,12 +12,12 @@
       },
       template: '<span ng-transclude></span>',
       link: function (scope, element, attrs) {
-
         function clickHandler(googleUser){
           scope.$apply(scope.clickHandler(googleUser));
         }
 
         function userListener(googleUser){
+          gapi.auth.setToken(googleUser.getAuthResponse());
           scope.$apply(scope.userListener(googleUser));
         }
 

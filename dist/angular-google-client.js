@@ -1,11 +1,11 @@
 (function() {
   'use strict';
-  angular.module('cm-google-api', []);
+  angular.module('cmGoogleApi', []);
 })();
 
 (function() {
   'use strict';
-  angular.module('cm-google-api').provider('googleClient', function () {
+  angular.module('cmGoogleApi').provider('googleClient', function () {
     var clientId;
     var scopes = [];
     var googleAuthConfig = {};
@@ -14,7 +14,6 @@
     var scriptsToLoad = 0;
     var googleApis = [];
     var cloudEndpoints = [];
-    var tryAutomaticAuth = false;
     var loadClient = false;
     var loadPicker = false;
     var loadGoogleSignIn = false;
@@ -31,11 +30,7 @@
       if (--apisToLoad === 0) {
         apiLoaded = true;
         apiLoading = false;
-        if(tryAutomaticAuth){
-          gapi.auth.authorize({'client_id': clientId, 'scope': scopes, 'immediate': true}, function(){apiLoadingPromise.resolve();});
-        }else{
-          apiLoadingPromise.resolve();
-        }
+        apiLoadingPromise.resolve();
       }
     };
 
@@ -109,8 +104,9 @@
         if(typeof config.hosted_domain !== 'undefined'){
           googleAuthConfig.hosted_domain = config.hosted_domain;
         }
+        googleAuthConfig.fetch_basic_profile = false;
         this.addScope('profile');
-        this.addScope('email');
+        //this.addScope('email');
       }
       return this;
     };
@@ -139,12 +135,6 @@
         obj.baseUrl = baseUrl;
         cloudEndpoints.push(obj);
       }
-      return this;
-    };
-
-    this.setAutomaticAuth = function(){
-      tryAutomaticAuth = true;
-      this.addScope('https://www.googleapis.com/auth/userinfo.email');
       return this;
     };
 
@@ -202,7 +192,7 @@
 
 (function() {
   'use strict';
-  angular.module('cm-google-api').service('googleAuthService', ['$q', 'googleClient', function ($q, googleClient) {
+  angular.module('cmGoogleApi').service('googleAuthService', ['$q', 'googleClient', function ($q, googleClient) {
     this.getAuthInstance = function(){
       var deferred = $q.defer();
       googleClient.afterScriptsLoaded().then(
@@ -237,7 +227,7 @@
 
 (function() {
   'use strict';
-  angular.module('cm-google-api').service('googleClientService', ['$q', 'googleClient', function ($q, googleClient) {
+  angular.module('cmGoogleApi').service('googleClientService', ['$q', 'googleClient', function ($q, googleClient) {
     this.execute = function(apiMethod, params){
       var deferred = $q.defer();
       googleClient.afterApiLoaded().then(function(){
@@ -270,14 +260,13 @@
 
 (function() {
   'use strict';
-  angular.module('cm-google-api').directive('cmGooglePicker', ['googleClient', '$q', '$window', function(googleClient, $q, $window){
+  angular.module('cmGoogleApi').directive('cmGooglePicker', ['googleClient', '$q', '$window', function(googleClient, $q, $window){
     var loading;
     var authDeferred;
     var oauthToken = null;
     return {
      restrict: 'A',
      scope: {
-      scopes: '=',
       locale: '@',
       views: '&',
       onPicked: '='
@@ -286,7 +275,7 @@
       function authUser() {
         if(!loading && !oauthToken){
           authDeferred = $q.defer();
-          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': scope.scopes, 'immediate': false },  handleAuthResult);
+          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': false },  handleAuthResult);
         }
         return authDeferred.promise;
       }
@@ -331,7 +320,7 @@
       googleClient.afterScriptsLoaded().then(
         function(){
           authDeferred = $q.defer();
-          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': scope.scopes, 'immediate': true },  handleAuthResult);
+          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': true },  handleAuthResult);
         }
       );
 
@@ -345,7 +334,7 @@
 
 (function() {
   'use strict';
-  angular.module('cm-google-api').directive('cmGoogleSignIn', ['$http', 'googleClient', function($http, googleClient){
+  angular.module('cmGoogleApi').directive('cmGoogleSignIn', ['$http', 'googleClient', function($http, googleClient){
     return {
       restrict: 'E',
       transclude: true,
@@ -357,12 +346,12 @@
       },
       template: '<span ng-transclude></span>',
       link: function (scope, element, attrs) {
-
         function clickHandler(googleUser){
           scope.$apply(scope.clickHandler(googleUser));
         }
 
         function userListener(googleUser){
+          gapi.auth.setToken(googleUser.getAuthResponse());
           scope.$apply(scope.userListener(googleUser));
         }
 

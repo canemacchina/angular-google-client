@@ -1,13 +1,12 @@
 (function() {
   'use strict';
-  angular.module('cm-google-api').directive('cmGooglePicker', ['googleClient', '$q', '$window', function(googleClient, $q, $window){
+  angular.module('cmGoogleApi').directive('cmGooglePicker', ['googleClient', '$q', '$window', function(googleClient, $q, $window){
     var loading;
     var authDeferred;
     var oauthToken = null;
     return {
      restrict: 'A',
      scope: {
-      scopes: '=',
       locale: '@',
       views: '&',
       onPicked: '='
@@ -16,7 +15,7 @@
       function authUser() {
         if(!loading && !oauthToken){
           authDeferred = $q.defer();
-          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': scope.scopes, 'immediate': false },  handleAuthResult);
+          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': false },  handleAuthResult);
         }
         return authDeferred.promise;
       }
@@ -61,7 +60,7 @@
       googleClient.afterScriptsLoaded().then(
         function(){
           authDeferred = $q.defer();
-          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': scope.scopes, 'immediate': true },  handleAuthResult);
+          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': true },  handleAuthResult);
         }
       );
 
