@@ -46,7 +46,7 @@ You don't need to load any Google client library script explicitly. `angular-goo
 ###Add dependency
 
 ```javascript
-var app = angular.module('myModule', ['cm-google-api']);
+var app = angular.module('myModule', ['cmGoogleApi']);
 ```
 
 You are done! Enjoy using gapi on Angular JS!
@@ -125,12 +125,15 @@ app.controller('AppCtrl', function ($scope, googleClient) {
   googleClient.afterApiLoaded().then(function(){
     gapi.client.drive.files.list({'maxResults': 10}).execute(function(resp){
       console.log(resp);
+      $scope.$apply();
     });
   });
 });
 ```
 
 `afterApiLoaded` checks for you that all apis are loaded before resolve the promise.
+
+**NB** If you use gapi directly you need to call `$scope.$apply()`, because the callback function is called outside Angular scope.
 
 ### Use Google Picker
 `angular-google-client` is shipped with `cm-google-picker`, a directive to use the Google Picker.

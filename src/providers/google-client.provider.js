@@ -1,16 +1,17 @@
 (function() {
   'use strict';
-  angular.module('cm-google-api').provider('googleClient', function () {
+  angular.module('cmGoogleApi').provider('googleClient', function () {
     var clientId;
     var scopes = [];
+    var googleAuthConfig = {};
 
     var apisToLoad = 0;
     var scriptsToLoad = 0;
     var googleApis = [];
     var cloudEndpoints = [];
-    var tryAutomaticAuth = false;
     var loadClient = false;
     var loadPicker = false;
+    var loadGoogleSignIn = false;
 
     var apiLoadingPromise;
     var apiLoaded = false;
@@ -24,11 +25,7 @@
       if (--apisToLoad === 0) {
         apiLoaded = true;
         apiLoading = false;
-        if(tryAutomaticAuth){
-          gapi.auth.authorize({'client_id': clientId, 'scope': scopes, 'immediate': true}, function(){apiLoadingPromise.resolve();});
-        }else{
-          apiLoadingPromise.resolve();
-        }
+        apiLoadingPromise.resolve();
       }
     };
 
@@ -42,17 +39,30 @@
 
     var loadScripts = function(){
       var aScriptLoaded = false;
+      if(loadGoogleSignIn){
+        if(typeof clientId === 'undefined'){
+          scriptsLoadingPromise.reject('you need to provide the clientId if you load google auth');
+        }else{
+          aScriptLoaded = true;
+          gapi.load('auth', {'callback': scriptsLoadCallback});
+          gapi.load('auth2', function(){
+            googleAuthConfig.scope = scopes;
+            googleAuthConfig.client_id = clientId;
+            gapi.auth2.init(googleAuthConfig);
+            scriptsLoadCallback();
+          });
+        }
+      }
       if(loadClient){
         aScriptLoaded = true;
         gapi.load('client', {'callback': scriptsLoadCallback});
       }
       if(loadPicker){
         if(typeof clientId === 'undefined'){
-          scriptsLoadingPromise.reject('you need to provide the clientId if you load Picker script');
+          scriptsLoadingPromise.reject('you need to provide the clientId if you load google picker');
         }else{
           aScriptLoaded = true;
           gapi.load('picker', {'callback': scriptsLoadCallback});
-          gapi.load('auth', {'callback': scriptsLoadCallback});
         }
       }
       return aScriptLoaded;
@@ -79,14 +89,28 @@
       return this;
     };
 
+    this.loadGoogleAuth = function(config){
+      if(!loadGoogleSignIn){
+        loadGoogleSignIn = true;
+        //I need to load gapi.auth and gapi.auth2 in order to assure that
+        //api, endpoints and picker could work
+        scriptsToLoad += 2;
+        if(typeof config.cookie_policy !== 'undefined'){
+          googleAuthConfig.cookie_policy = config.cookie_policy;
+        }
+        if(typeof config.hosted_domain !== 'undefined'){
+          googleAuthConfig.hosted_domain = config.hosted_domain;
+        }
+        googleAuthConfig.fetch_basic_profile = false;
+        this.addScope('profile');
+      }
+      return this;
+    };
+
     this.loadPickerLibrary = function(){
       if(!loadPicker){
         loadPicker = true;
-        //just a bit weird. If I load picker library, I need to call
-        //gapi.load('auth', {'callback': scriptsLoadCallback});
-        //but if I load client library, auth is automatically loaded.
-        //Instead of handle both cases, I prefer to load two time auth
-        scriptsToLoad +=2;
+        scriptsToLoad++;
       }
       return this;
     };
@@ -103,12 +127,6 @@
         obj.baseUrl = baseUrl;
         cloudEndpoints.push(obj);
       }
-      return this;
-    };
-
-    this.setAutomaticAuth = function(){
-      tryAutomaticAuth = true;
-      this.addScope('https://www.googleapis.com/auth/userinfo.email');
       return this;
     };
 
@@ -130,7 +148,7 @@
             scriptsLoadingPromise = $q.defer();
             $window._cmGoogleClientInitCallback = function(){
               if(!loadScripts()){
-                scriptsLoadingPromise.reject('at least you need to add some api or load picker.js');
+                scriptsLoadingPromise.reject('at least you need to add some api, load picker library or load google auth');
               }
             };
             var script = $document[0].createElement('script');
@@ -148,7 +166,7 @@
             apiLoading = true;
             this.afterScriptsLoaded().then(function(){
               if(!loadApi()){
-                apiLoadingPromise.reject('at least you nedd to load an Api');
+                apiLoadingPromise.reject('at least you need to load an Api');
               }
             },
             function(e){
@@ -158,7 +176,7 @@
           return apiLoadingPromise.promise;
         },
         clientId: clientId,
-        scopes: scopes
+        scopes: scopes.trim()
       };
     }];
   });
