@@ -181,7 +181,7 @@
           return apiLoadingPromise.promise;
         },
         clientId: clientId,
-        scopes: scopes
+        scopes: scopes.trim()
       };
     }];
   });
@@ -258,9 +258,6 @@
 (function() {
   'use strict';
   angular.module('cmGoogleApi').directive('cmGooglePicker', ['googleClient', '$q', '$window', function(googleClient, $q, $window){
-    var loading;
-    var authDeferred;
-    var oauthToken = null;
     return {
      restrict: 'A',
      scope: {
@@ -294,14 +291,6 @@
         );
       }
 
-      loading = true;
-     /* googleClient.afterScriptsLoaded().then(
-        function(){
-          authDeferred = $q.defer();
-          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': true },  handleAuthResult);
-        }
-      );*/
-
       element.bind('click', function (e) {
         openPicker();
       });
@@ -322,7 +311,7 @@
         signInListener: '=',
         userListener: '='
       },
-      template: '<span ng-transclude></span>',
+      template: '<ng-transclude></ng-transclude>',
       link: function (scope, element, attrs) {
         function clickHandler(googleUser){
           scope.$apply(scope.clickHandler(googleUser));

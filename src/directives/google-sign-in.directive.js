@@ -10,7 +10,7 @@
         signInListener: '=',
         userListener: '='
       },
-      template: '<span ng-transclude></span>',
+      template: '<ng-transclude></ng-transclude>',
       link: function (scope, element, attrs) {
         function clickHandler(googleUser){
           scope.$apply(scope.clickHandler(googleUser));

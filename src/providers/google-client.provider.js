@@ -176,7 +176,7 @@
           return apiLoadingPromise.promise;
         },
         clientId: clientId,
-        scopes: scopes
+        scopes: scopes.trim()
       };
     }];
   });

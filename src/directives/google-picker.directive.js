@@ -1,9 +1,6 @@
 (function() {
   'use strict';
   angular.module('cmGoogleApi').directive('cmGooglePicker', ['googleClient', '$q', '$window', function(googleClient, $q, $window){
-    var loading;
-    var authDeferred;
-    var oauthToken = null;
     return {
      restrict: 'A',
      scope: {
@@ -36,14 +33,6 @@
           }
         );
       }
-
-      loading = true;
-     /* googleClient.afterScriptsLoaded().then(
-        function(){
-          authDeferred = $q.defer();
-          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': true },  handleAuthResult);
-        }
-      );*/
 
       element.bind('click', function (e) {
         openPicker();
