@@ -44,6 +44,7 @@
           scriptsLoadingPromise.reject('you need to provide the clientId if you load google auth');
         }else{
           aScriptLoaded = true;
+          gapi.load('auth', {'callback': scriptsLoadCallback});
           gapi.load('auth2', function(){
             googleAuthConfig.scope = scopes;
             googleAuthConfig.client_id = clientId;
@@ -62,7 +63,6 @@
         }else{
           aScriptLoaded = true;
           gapi.load('picker', {'callback': scriptsLoadCallback});
-          gapi.load('auth', {'callback': scriptsLoadCallback});
         }
       }
       return aScriptLoaded;
@@ -92,7 +92,9 @@
     this.loadGoogleAuth = function(config){
       if(!loadGoogleSignIn){
         loadGoogleSignIn = true;
-        scriptsToLoad++;
+        //I need to load gapi.auth and gapi.auth2 in order to assure that
+        //api, endpoints and picker could work
+        scriptsToLoad += 2;
         if(typeof config.cookie_policy !== 'undefined'){
           googleAuthConfig.cookie_policy = config.cookie_policy;
         }
@@ -101,7 +103,6 @@
         }
         googleAuthConfig.fetch_basic_profile = false;
         this.addScope('profile');
-        //this.addScope('email');
       }
       return this;
     };
@@ -109,11 +110,7 @@
     this.loadPickerLibrary = function(){
       if(!loadPicker){
         loadPicker = true;
-        //just a bit weird. If I load picker library, I need to call
-        //gapi.load('auth', {'callback': scriptsLoadCallback});
-        //but if I load client library, auth is automatically loaded.
-        //Instead of handle both cases, I prefer to load two time auth
-        scriptsToLoad +=2;
+        scriptsToLoad++;
       }
       return this;
     };

@@ -49,6 +49,7 @@
           scriptsLoadingPromise.reject('you need to provide the clientId if you load google auth');
         }else{
           aScriptLoaded = true;
+          gapi.load('auth', {'callback': scriptsLoadCallback});
           gapi.load('auth2', function(){
             googleAuthConfig.scope = scopes;
             googleAuthConfig.client_id = clientId;
@@ -67,7 +68,6 @@
         }else{
           aScriptLoaded = true;
           gapi.load('picker', {'callback': scriptsLoadCallback});
-          gapi.load('auth', {'callback': scriptsLoadCallback});
         }
       }
       return aScriptLoaded;
@@ -97,7 +97,9 @@
     this.loadGoogleAuth = function(config){
       if(!loadGoogleSignIn){
         loadGoogleSignIn = true;
-        scriptsToLoad++;
+        //I need to load gapi.auth and gapi.auth2 in order to assure that
+        //api, endpoints and picker could work
+        scriptsToLoad += 2;
         if(typeof config.cookie_policy !== 'undefined'){
           googleAuthConfig.cookie_policy = config.cookie_policy;
         }
@@ -106,7 +108,6 @@
         }
         googleAuthConfig.fetch_basic_profile = false;
         this.addScope('profile');
-        //this.addScope('email');
       }
       return this;
     };
@@ -114,11 +115,7 @@
     this.loadPickerLibrary = function(){
       if(!loadPicker){
         loadPicker = true;
-        //just a bit weird. If I load picker library, I need to call
-        //gapi.load('auth', {'callback': scriptsLoadCallback});
-        //but if I load client library, auth is automatically loaded.
-        //Instead of handle both cases, I prefer to load two time auth
-        scriptsToLoad +=2;
+        scriptsToLoad++;
       }
       return this;
     };
@@ -192,7 +189,40 @@
 
 (function() {
   'use strict';
-  angular.module('cmGoogleApi').service('googleAuthService', ['$q', 'googleClient', function ($q, googleClient) {
+  angular.module('cmGoogleApi').service('cmApiService', ['$q', 'googleClient', function ($q, googleClient) {
+    this.execute = function(apiMethod, params){
+      var deferred = $q.defer();
+      googleClient.afterApiLoaded().then(function(){
+        apiMethod = apiMethod.split('.');
+        var method = gapi.client;
+        angular.forEach(apiMethod, function(m){
+          method = method[m];
+        }, method);
+        var request;
+        if(typeof params === 'undefined'){
+          request = method();
+        }else{
+          request = method(params);
+        }
+        request.then(
+          function(resp){
+            deferred.resolve(resp);
+          },
+          function(reason){
+            deferred.reject(reason);
+          });
+      },
+      function(e){
+        deferred.reject(e);
+      });
+      return deferred.promise;
+    };
+  }]);
+})();
+
+(function() {
+  'use strict';
+  angular.module('cmGoogleApi').service('cmAuthService', ['$q', 'googleClient', function ($q, googleClient) {
     this.getAuthInstance = function(){
       var deferred = $q.defer();
       googleClient.afterScriptsLoaded().then(
@@ -227,39 +257,6 @@
 
 (function() {
   'use strict';
-  angular.module('cmGoogleApi').service('googleClientService', ['$q', 'googleClient', function ($q, googleClient) {
-    this.execute = function(apiMethod, params){
-      var deferred = $q.defer();
-      googleClient.afterApiLoaded().then(function(){
-        apiMethod = apiMethod.split('.');
-        var method = gapi.client;
-        angular.forEach(apiMethod, function(m){
-          method = method[m];
-        }, method);
-        var request;
-        if(typeof params === 'undefined'){
-          request = method();
-        }else{
-          request = method(params);
-        }
-        request.then(
-          function(resp){
-            deferred.resolve(resp);
-          },
-          function(reason){
-            deferred.reject(reason);
-          });
-      },
-      function(e){
-        deferred.reject(e);
-      });
-      return deferred.promise;
-    };
-  }]);
-})();
-
-(function() {
-  'use strict';
   angular.module('cmGoogleApi').directive('cmGooglePicker', ['googleClient', '$q', '$window', function(googleClient, $q, $window){
     var loading;
     var authDeferred;
@@ -272,23 +269,6 @@
       onPicked: '='
     },
     link: function (scope, element, attrs) {
-      function authUser() {
-        if(!loading && !oauthToken){
-          authDeferred = $q.defer();
-          gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': false },  handleAuthResult);
-        }
-        return authDeferred.promise;
-      }
-
-      function handleAuthResult(authResult) {
-        loading = false;
-        if (authResult && !authResult.error) {
-          oauthToken = authResult.access_token;
-          authDeferred.resolve();
-        }else{
-          authDeferred.reject();
-        }
-      }
 
       function pickerCallback (data) {
         if (scope.onPicked && data.action === google.picker.Action.PICKED) {
@@ -299,30 +279,28 @@
       function openPicker(){
         googleClient.afterScriptsLoaded().then(
           function(){
-            authUser().then(function(){
-              var picker = new google.picker.PickerBuilder()
-              .setLocale(scope.locale)
-              .setOAuthToken(oauthToken)
-              .setOrigin($window.location.protocol + '//' + $window.location.host)
-              .setCallback(pickerCallback);
-              var viewArray = scope.views();
-              angular.forEach(viewArray, function(view){
-                picker.addView(view);
-              });
-              picker = picker.build();
-              picker.setVisible(true);
+            var picker = new google.picker.PickerBuilder()
+            .setLocale(scope.locale)
+            .setOAuthToken(gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token)
+            .setOrigin($window.location.protocol + '//' + $window.location.host)
+            .setCallback(pickerCallback);
+            var viewArray = scope.views();
+            angular.forEach(viewArray, function(view){
+              picker.addView(view);
             });
+            picker = picker.build();
+            picker.setVisible(true);
           }
         );
       }
 
       loading = true;
-      googleClient.afterScriptsLoaded().then(
+     /* googleClient.afterScriptsLoaded().then(
         function(){
           authDeferred = $q.defer();
           gapi.auth.authorize( { 'client_id': googleClient.clientId, 'scope': googleClient.scopes, 'immediate': true },  handleAuthResult);
         }
-      );
+      );*/
 
       element.bind('click', function (e) {
         openPicker();

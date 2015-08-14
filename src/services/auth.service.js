@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  angular.module('cmGoogleApi').service('googleAuthService', ['$q', 'googleClient', function ($q, googleClient) {
+  angular.module('cmGoogleApi').service('cmAuthService', ['$q', 'googleClient', function ($q, googleClient) {
     this.getAuthInstance = function(){
       var deferred = $q.defer();
       googleClient.afterScriptsLoaded().then(
