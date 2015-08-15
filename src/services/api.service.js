@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  angular.module('cm-google-api').service('googleClientService', ['$q', 'googleClient', function ($q, googleClient) {
+  angular.module('cmGoogleApi').service('cmApiService', ['$q', 'googleClient', function ($q, googleClient) {
     this.execute = function(apiMethod, params){
       var deferred = $q.defer();
       googleClient.afterApiLoaded().then(function(){

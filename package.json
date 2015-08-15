@@ -1,6 +1,6 @@
 {
   "name": "angular-google-client",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "description": "Angularjs module to integrate Google API Client Library for JavaScript",
   "author": "Lorenzo Bugiani <lorenzo.bugiani@gmail.com>",
   "devDependencies": {
