@@ -9,14 +9,20 @@
     "url": "git://github.com/canemacchina/angular-google-client.git"
   },
   "keywords": [
-    "Angularjs",
     "Google",
     "Google Cloud Endpoints",
-    "Google Picker",
-    "Angular Google Picker",
     "Google Client Library for JavaScript",
     "Google App Engine",
-    "Angularjs Google client library integration"
+    "Google Picker",
+    "Google Signin",
+    "Angularjs",
+    "Angular Google Cloud Endpoints",
+    "Angular Google Client Library for JavaScript",
+    "Angularjs Google client library integration",
+    "Angular Google App Engine",
+    "Angular Google Picker",
+    "Angular Google Signin",
+    "Angular Google Api"
   ],
   "license": "MIT",
   "ignore": [

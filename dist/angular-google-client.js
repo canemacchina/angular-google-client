@@ -100,14 +100,17 @@
         //I need to load gapi.auth and gapi.auth2 in order to assure that
         //api, endpoints and picker could work
         scriptsToLoad += 2;
-        if(typeof config.cookie_policy !== 'undefined'){
-          googleAuthConfig.cookie_policy = config.cookie_policy;
+        if(typeof config === 'object'){
+          if(typeof config.cookie_policy !== 'undefined'){
+            googleAuthConfig.cookie_policy = config.cookie_policy;
+          }
+          if(typeof config.hosted_domain !== 'undefined'){
+            googleAuthConfig.hosted_domain = config.hosted_domain;
+          }
+          if(typeof config.fetch_basic_profile !== 'undefined'){
+            googleAuthConfig.fetch_basic_profile = config.fetch_basic_profile;
+          }
         }
-        if(typeof config.hosted_domain !== 'undefined'){
-          googleAuthConfig.hosted_domain = config.hosted_domain;
-        }
-        googleAuthConfig.fetch_basic_profile = false;
-        this.addScope('profile');
       }
       return this;
     };
