@@ -16,8 +16,7 @@ Google authentication and authorization are provided using [Google Sign-in](http
   - [Methods explanations](#methods-explanations)
 - [Usage](#usage)
   - [User authentication & authorization](#user-authentication-&-authorization)
-  - [Make an Api call through googleClientService](#make-an-api-call-through-googleclientservice)
-  - [Use gapi library directly](#use-gapi-library-directly)
+  - [Make api calls](#make-api-calls)
   - [Use Google Picker](#use-google-picker)
 - [License](#license)
 
