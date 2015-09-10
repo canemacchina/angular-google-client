@@ -6,7 +6,8 @@
       googleClient.afterScriptsLoaded().then(
         function(){
           var auth2 = gapi.auth2.getAuthInstance();
-          /*
+          auth2.then(function(){
+            /*
             From here the code start to be really weird.
             Since auth2 object have a THEN method Angular try to call auth2.then to resolve the deferred.
             But that THEN method is not the angular deferred THEN method (is the gapi.auth2.GoogleAuth.then method),
@@ -18,17 +19,20 @@
             3) put back that method on the object
 
             This bug occur with Angular version >=1.3.0
-          */
-          var thenFn = auth2.then;
-          auth2.then = undefined;
-          deferred.resolve(auth2);
-          auth2.then = thenFn;
+            */
+            var thenFn = auth2.then;
+            auth2.then = undefined;
+            deferred.resolve(auth2);
+            auth2.then = thenFn;
+          }, function(e){
+            deferred.reject(e);
+          });
         },
         function(e){
           deferred.reject(e);
         }
-      );
-      return deferred.promise;
-    };
-  }]);
+        );
+return deferred.promise;
+};
+}]);
 })();
