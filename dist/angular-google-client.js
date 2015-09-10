@@ -7,7 +7,7 @@
   'use strict';
   angular.module('cmGoogleApi').provider('googleClient', function () {
     var clientId;
-    var scopes = [];
+    var scopes = '';
     var googleAuthConfig = {};
 
     var apisToLoad = 0;
