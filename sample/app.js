@@ -10,7 +10,7 @@ app.config(function (googleClientProvider) {
 			cookie_policy: 'single_host_origin',
 			fetch_basic_profile: true
 		})
-		.setClientId('664013737886-a2u2h01ho6g2qmssfld3a7th2ttjskc2.apps.googleusercontent.com')
+		.setClientId('63185388726-ts4ircj3ej3afnm97fbqlkg1ihj3l2gv.apps.googleusercontent.com')
 		.addScope('https://www.googleapis.com/auth/drive.readonly')
 		.addScope(' https://www.googleapis.com/auth/youtube')
 		.addApi('drive', 'v2')
