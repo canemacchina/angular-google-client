@@ -31,8 +31,8 @@
         function(e){
           deferred.reject(e);
         }
-        );
-return deferred.promise;
-};
-}]);
+      );
+      return deferred.promise;
+    };
+  }]);
 })();

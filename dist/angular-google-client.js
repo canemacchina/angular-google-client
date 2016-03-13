@@ -17,6 +17,7 @@
     var loadClient = false;
     var loadPicker = false;
     var loadGoogleSignIn = false;
+    var loadSignInButton = false;
 
     var apiLoadingPromise;
     var apiLoaded = false;
@@ -50,12 +51,14 @@
         }else{
           aScriptLoaded = true;
           gapi.load('auth', {'callback': scriptsLoadCallback});
-          gapi.load('auth2', function(){
-            googleAuthConfig.scope = scopes;
-            googleAuthConfig.client_id = clientId;
-            gapi.auth2.init(googleAuthConfig);
-            scriptsLoadCallback();
-          });
+          if(loadSignInButton){
+              gapi.load('auth2', function(){
+              googleAuthConfig.scope = scopes;
+              googleAuthConfig.client_id = clientId;
+              gapi.auth2.init(googleAuthConfig);
+              scriptsLoadCallback();
+            });
+          }
         }
       }
       if(loadClient){
@@ -91,27 +94,41 @@
         loadClient = true;
         scriptsToLoad++;
       }
+    };
+
+    var addAuth = function(useSignInButton, config){
+      if(!loadGoogleSignIn){
+        loadGoogleSignIn = true;
+        if(useSignInButton){
+          loadSignInButton = true;
+          //I need to load gapi.auth and gapi.auth2 in order to assure that
+          //api, endpoints and picker could work
+          scriptsToLoad += 2;
+          if(typeof config === 'object'){
+            if(typeof config.cookie_policy !== 'undefined'){
+              googleAuthConfig.cookie_policy = config.cookie_policy;
+            }
+            if(typeof config.hosted_domain !== 'undefined'){
+              googleAuthConfig.hosted_domain = config.hosted_domain;
+            }
+            if(typeof config.fetch_basic_profile !== 'undefined'){
+              googleAuthConfig.fetch_basic_profile = config.fetch_basic_profile;
+            }
+          }
+        }else{
+          //I just need to load google.auth
+          scriptsToLoad += 1;
+        }
+      }
+    };
+
+    this.loadGoogleSignInButton = function(config){
+      addAuth(true, config);
       return this;
     };
 
-    this.loadGoogleAuth = function(config){
-      if(!loadGoogleSignIn){
-        loadGoogleSignIn = true;
-        //I need to load gapi.auth and gapi.auth2 in order to assure that
-        //api, endpoints and picker could work
-        scriptsToLoad += 2;
-        if(typeof config === 'object'){
-          if(typeof config.cookie_policy !== 'undefined'){
-            googleAuthConfig.cookie_policy = config.cookie_policy;
-          }
-          if(typeof config.hosted_domain !== 'undefined'){
-            googleAuthConfig.hosted_domain = config.hosted_domain;
-          }
-          if(typeof config.fetch_basic_profile !== 'undefined'){
-            googleAuthConfig.fetch_basic_profile = config.fetch_basic_profile;
-          }
-        }
-      }
+    this.loadGoogleAuth= function(){
+      addAuth(false);
       return this;
     };
 
@@ -150,7 +167,7 @@
 
     this.$get = ['$q', '$window', '$document', function ($q, $window, $document) {
       return{
-        afterScriptsLoaded: function(){
+        'afterScriptsLoaded': function(){
           if(!scriptsLoaded && !scriptsLoading){
             scriptsLoading = true;
             scriptsLoadingPromise = $q.defer();
@@ -168,7 +185,8 @@
           }
           return scriptsLoadingPromise.promise;
         },
-        afterApiLoaded: function(){
+
+        'afterApiLoaded': function(){
           if(!apiLoaded && !apiLoading){
             apiLoadingPromise = $q.defer();
             apiLoading = true;
@@ -183,8 +201,46 @@
           }
           return apiLoadingPromise.promise;
         },
+
         clientId: clientId,
-        scopes: scopes.trim()
+        scopes: scopes.trim(),
+        'checkAuth': function(){
+          var deferred = $q.defer();
+          if(loadSignInButton){
+            this.afterScriptsLoaded().then(function(){
+              var auth2 = gapi.auth2.getAuthInstance();
+              auth2.then(function(){
+                deferred.resolve(auth2.isSignedIn.get());
+              }, function(e){
+                deferred.reject(e);
+              });
+            },
+            function(e){
+              deferred.reject(e);
+            });
+          }else{
+            var handleAuthResult = function(authResult){
+              if (authResult && !authResult.error) {
+                deferred.resolve(true);
+              }else{
+                //TODO: I've to understand better implementation
+                // if(authResult && authResult.error){
+                //    deferred.reject(authResult.error);
+                // }else{
+                //   deferred.reject('Unable to check user log in state');
+                // }
+                deferred.resolve(false);
+              }
+            };
+            this.afterScriptsLoaded().then(function(){
+              gapi.auth.authorize({'client_id': clientId, 'scope': scopes.trim(), immediate: true}, handleAuthResult);
+            },
+            function(e){
+              deferred.reject(e);
+            });
+          }
+          return deferred.promise;
+        }
       };
     }];
   });
@@ -256,10 +312,10 @@
         function(e){
           deferred.reject(e);
         }
-        );
-return deferred.promise;
-};
-}]);
+      );
+      return deferred.promise;
+    };
+  }]);
 })();
 
 (function() {

@@ -6,10 +6,11 @@ app.config(function (googleClientProvider) {
 	// drive and youtube scope to make call to those services
 	// pickerLibrary to use the picker
 	googleClientProvider
-		.loadGoogleAuth({
-			cookie_policy: 'single_host_origin',
-			fetch_basic_profile: true
-		})
+		// .loadGoogleSignInButton({
+		// 	cookie_policy: 'single_host_origin',
+		// 	fetch_basic_profile: true
+		// })
+    .loadGoogleAuth()
 		.setClientId('63185388726-ts4ircj3ej3afnm97fbqlkg1ihj3l2gv.apps.googleusercontent.com')
 		.addScope('https://www.googleapis.com/auth/drive.readonly')
 		.addScope(' https://www.googleapis.com/auth/youtube')
@@ -19,7 +20,7 @@ app.config(function (googleClientProvider) {
 
 app.controller('MainCtrl', function($scope, cmAuthService, cmApiService, googleClient){
 
-	$scope.isSignedIn = false;
+	$scope.isSignedIn = true;
 	$scope.user = "";
 	$scope.viewedFile = [];
 	$scope.modifiedFile = [];
@@ -71,6 +72,7 @@ app.controller('MainCtrl', function($scope, cmAuthService, cmApiService, googleC
 
 	// Make an api call using cmApiService, my own GAPI wrapper
 	$scope.getViewedFile = function(){
+    googleClient.checkAuth().then(function(res){console.log(res)});
 		var driveOptions = {
 			'maxResults': 10,
 			'orderBy': 'lastViewedByMeDate desc',
@@ -117,18 +119,6 @@ app.controller('MainCtrl', function($scope, cmAuthService, cmApiService, googleC
 	$scope.onPicked = function(data){
 		$scope.pickedFile = data[0];
 		$scope.filePicked = true;
-	};
-
-	$scope.test = function(){
-		 googleClient.afterApiLoaded().then(function () {
-			console.log(gapi.auth.getToken());
-			if(gapi.auth.getToken() !== null){
-				// if token exists, send access token in request
-				//request.setRequestHeader('Authorization','Bearer ' + gapi.auth.getToken().access_token);
-				console.log(gapi.auth.getToken().access_token)
-				console.log(gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token);
-			}
-		});
 	};
 
 });
