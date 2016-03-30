@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <body ng-controller="MainCtrl" ng-cloak>
+     <button type="button" ng-click="test()">Make Other Action</button>
+        <cm-google-sign-in click-handler='clickHandler' sign-in-listener='signInListener' user-listener='userListener' ng-if="!isSignedIn">
+            <button type="button">Login</button>
+        </cm-google-sign-in>
+        <button type="button" ng-click="logout()" ng-if="isSignedIn">Logout</button>
+        <button type="button" ng-click="disconnect()" ng-if="isSignedIn">Disconnect</button>
+        <div ng-if="isSignedIn" style="margin-top: 20px">
+          <div>Hello {{user}}!</div>
+          <div>
+            <button type="button" ng-click="getViewedFile()">Show last seen drive file </button>
+            <button type="button" ng-click="getModifiedFile()">Show last modified drive file</button>
+            <button type="button" cm-google-picker locale='en' views='views()' on-picked='onPicked'>Open Google Picker</button>
+          </div>
+          <div style="float:left;width:33%">
+            <ul ng-repeat="file in viewedFile">
+              <li>{{file.title}} <a target="_blank" href="{{file.alternateLink}}">LINK</a></li>
+            </ul>
+          </div>
+          <div style="float:left;width:33%">
+            <ul ng-repeat="file in modifiedFile">
+              <li>{{file.title}} <a target="_blank" href="{{file.alternateLink}}">LINK</a></li>
+            </ul>
+          </div>
+          <div style="float:left;width:33%">
+              With the picker you have selected: <span ng-if="filePicked">{{pickedFile.name}} <a target="_blank" href="{{pickedFile.url}}">LINK</a></span>
+          </div>
+          <div style="clear:both"></div>
+        </div>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+        <script type="text/javascript" src="../dist/angular-google-client.min.js"></script>
+        <script type="text/javascript" src="app.js"></script>
+    </body>
+</html>
