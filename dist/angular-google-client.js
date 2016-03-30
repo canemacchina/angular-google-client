@@ -314,9 +314,9 @@ return deferred.promise;
       transclude: true,
       replace: true,
       scope: {
-        clickHandler: '=',
-        signInListener: '=',
-        userListener: '='
+        clickHandler: '=?',
+        signInListener: '=?',
+        userListener: '=?'
       },
       template: '<ng-transclude></ng-transclude>',
       link: function (scope, element, attrs) {
