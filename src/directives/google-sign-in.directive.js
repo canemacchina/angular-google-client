@@ -18,7 +18,9 @@
 
         function userListener(googleUser){
           gapi.auth.setToken(googleUser.getAuthResponse());
-          scope.$apply(scope.userListener(googleUser));
+          if (typeof scope.userListener !== 'undefined') {
+            scope.$apply(scope.userListener(googleUser));
+          }
         }
 
         function signInListener(val){
@@ -34,11 +36,9 @@
             if (typeof scope.signInListener !== 'undefined') {
               auth2.isSignedIn.listen(signInListener);
             }
-            if (typeof scope.userListener !== 'undefined') {
-              auth2.currentUser.listen(userListener);
-            }
+            auth2.currentUser.listen(userListener);
             auth2.attachClickHandler(element[0], {}, clickHandler, function(error) {
-              console.log(JSON.stringify(error, undefined, 2));
+              throw new Error(JSON.stringify(error, undefined, 2))
             });
           },
           function(e){
