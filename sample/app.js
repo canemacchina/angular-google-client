@@ -10,9 +10,9 @@ app.config(function (googleClientProvider) {
 			cookie_policy: 'single_host_origin',
 			fetch_basic_profile: true
 		})
-		.setClientId('63185388726-ts4ircj3ej3afnm97fbqlkg1ihj3l2gv.apps.googleusercontent.com')
-		.addScope('https://www.googleapis.com/auth/drive.readonly')
-		.addScope(' https://www.googleapis.com/auth/youtube')
+		.setClientId('508872496930-1376hp5bi9au0fs2ma4agt7fstn7ipfa.apps.googleusercontent.com')
+/*		.addScope('https://www.googleapis.com/auth/drive.readonly')
+		.addScope(' https://www.googleapis.com/auth/youtube')*/
 		.addApi('drive', 'v2')
 		.loadPickerLibrary();
 });

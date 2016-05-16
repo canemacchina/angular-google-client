@@ -23,4 +23,5 @@ gulp.task('watch', function () {
   gulp.watch('src/**/*.js', ['uglify']);
 });
 
-gulp.task('default', ['watch']);
+  gulp.watch('src/**/*.js', ['uglify']);
+gulp.task('default', ['uglify', 'watch']);

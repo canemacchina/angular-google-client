@@ -21,6 +21,10 @@
     var scriptsLoaded = false;
     var scriptsLoading = false;
 
+    var trim = function (str) {
+      return str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+    };
+
     var apiLoadCallback = function() {
       if (--apisToLoad === 0) {
         apiLoaded = true;
@@ -42,16 +46,20 @@
       if(loadGoogleSignIn){
         if(typeof clientId === 'undefined'){
           scriptsLoadingPromise.reject('you need to provide the clientId if you load google auth');
-        }else{
-          aScriptLoaded = true;
-          gapi.load('auth', {'callback': scriptsLoadCallback});
-          gapi.load('auth2', function(){
-            googleAuthConfig.scope = scopes;
-            googleAuthConfig.client_id = clientId;
-            gapi.auth2.init(googleAuthConfig);
-            scriptsLoadCallback();
-          });
+          return;
         }
+        if(!googleAuthConfig.fetch_basic_profile && trim(scopes) === ''){
+          scriptsLoadingPromise.reject('you need to set "fetch_basic_profile" to true or request at least one scope if you load google auth');
+          return;
+        }
+        aScriptLoaded = true;
+        gapi.load('auth', {'callback': scriptsLoadCallback});
+        gapi.load('auth2', function(){
+          googleAuthConfig.scope = scopes;
+          googleAuthConfig.client_id = clientId;
+          gapi.auth2.init(googleAuthConfig);
+          scriptsLoadCallback();
+        });
       }
       if(loadClient){
         aScriptLoaded = true;
@@ -96,14 +104,31 @@
         //api, endpoints and picker could work
         scriptsToLoad += 2;
         if(typeof config === 'object'){
-          if(typeof config.cookie_policy !== 'undefined'){
-            googleAuthConfig.cookie_policy = config.cookie_policy;
-          }
           if(typeof config.hosted_domain !== 'undefined'){
             googleAuthConfig.hosted_domain = config.hosted_domain;
           }
+          if(typeof config.cookie_policy !== 'undefined'){
+            googleAuthConfig.cookie_policy = config.cookie_policy;
+          }else{
+            googleAuthConfig.cookie_policy = 'single_host_origin'
+          }
           if(typeof config.fetch_basic_profile !== 'undefined'){
             googleAuthConfig.fetch_basic_profile = config.fetch_basic_profile;
+          }else{
+            googleAuthConfig.fetch_basic_profile = true;
+          }
+
+          if(googleAuthConfig.fetch_basic_profile){
+            //try to fix a Google library bug.
+            //If no scopes are explicitly requested, no access_token is returned into the AuthResponse object,
+            //even if "fetch_basic_profile" is true, that mean "add 'profile and email' scopes"
+            //(well, to be precise, access token is returned but deeper into the object, not on the
+            //first level like doc says).
+            //Simply requesting explicitly a scope fix the bug, so if "fetch_basic_profile" is true
+            //I insert "profile" and "email" as requested scopes, that is what Google Library do
+            //(doesn't matter if the same scope is requested more than once)
+            this.addScope('profile');
+            this.addScope('email');
           }
         }
       }
